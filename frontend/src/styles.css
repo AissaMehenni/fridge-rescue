@@ -1,0 +1,180 @@
+/* Fridge Rescue : palette « givre », la couleur ne code qu'une chose, la fraîcheur. */
+:root {
+  --frost: #e9f1f0;      /* fond : paroi de frigo */
+  --ice: #f7fbfa;        /* surfaces */
+  --spruce: #10302b;     /* encre */
+  --spruce-soft: #4a635e;
+  --line: #c9d9d6;
+  --fresh: #3fa27a;
+  --soon: #e8a33d;
+  --urgent: #e2553f;
+  --expired: #8c7a86;
+  --radius-tag: 999px;
+  --radius-panel: 14px;
+  --display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --frost: #0c1c19;
+    --ice: #132622;
+    --spruce: #e4efec;
+    --spruce-soft: #9db4ae;
+    --line: #2a4540;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--frost);
+  color: var(--spruce);
+  font: 400 1rem/1.55 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; }
+
+:focus-visible { outline: 3px solid var(--soon); outline-offset: 2px; border-radius: 4px; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* --- En-tête */
+.masthead { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 700 1.15rem/1 var(--display); color: var(--spruce); text-decoration: none;
+}
+.brand svg { width: 28px; height: 28px; fill: var(--spruce); }
+.brand .door { fill: var(--frost); }
+.skip { color: var(--spruce); font-weight: 600; text-underline-offset: 4px; }
+
+/* --- Héros : un titre qui dit quoi faire, puis la frise */
+.hero { padding: 28px 0 8px; }
+.hero h1 {
+  font: 800 clamp(2.1rem, 5.6vw, 4.4rem)/1.02 var(--display);
+  letter-spacing: -0.03em;
+  max-width: 17ch;
+  margin: 0 0 16px;
+  text-wrap: balance;
+}
+.lede { color: var(--spruce-soft); max-width: 62ch; margin: 0 0 28px; font-size: 1.05rem; }
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(112px, 1fr));
+  gap: 0;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  border-top: 3px solid var(--spruce);
+  scroll-snap-type: x proximity;
+}
+.day { padding: 10px 8px 16px; border-left: 1px solid var(--line); min-height: 150px; scroll-snap-align: start; }
+.day:first-child { border-left: 0; padding-left: 0; }
+.day-title {
+  font: 600 0.85rem/1.2 var(--body); margin: 0 0 12px; color: var(--spruce-soft);
+}
+.day-d0 .day-title, .day-d1 .day-title { color: var(--urgent); }
+.day-expired { background: repeating-linear-gradient(135deg, transparent 0 8px, color-mix(in srgb, var(--expired) 10%, transparent) 8px 9px); }
+
+.tags { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.tag {
+  display: inline-flex; flex-direction: column; padding: 6px 12px 7px;
+  border-radius: 10px; line-height: 1.2; max-width: 100%;
+  background: var(--ice); border: 1.5px solid currentColor;
+}
+.tag-name { font-weight: 600; color: var(--spruce); overflow-wrap: anywhere; }
+.tag-qty { font-size: 0.8rem; color: var(--spruce-soft); }
+.tag-urgent { color: var(--urgent); background: color-mix(in srgb, var(--urgent) 14%, var(--ice)); }
+.tag-soon { color: var(--soon); }
+.tag-fresh { color: var(--fresh); }
+.tag-expired { color: var(--expired); }
+.tag-expired .tag-name { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* --- Colonnes */
+.columns { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 48px; margin-top: 48px; }
+h2 { font: 700 1.6rem/1.15 var(--display); letter-spacing: -0.015em; margin: 0 0 18px; }
+.side { display: flex; flex-direction: column; gap: 40px; }
+.muted { color: var(--spruce-soft); }
+.alert {
+  border-left: 4px solid var(--urgent); padding: 10px 14px; margin: 0 0 16px;
+  background: color-mix(in srgb, var(--urgent) 9%, transparent); border-radius: 0 8px 8px 0;
+}
+
+/* --- Recettes : une liste ordonnée (c'est un classement) */
+.recipe-list { list-style: none; counter-reset: rank; margin: 0; padding: 0; }
+.recipe { counter-increment: rank; padding: 20px 0 18px; border-top: 1px solid var(--line); }
+.recipe:first-child { border-top: 0; padding-top: 4px; }
+.recipe-head { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+.recipe-emoji {
+  font-size: 1.7rem; width: 52px; height: 52px; display: grid; place-items: center;
+  background: var(--ice); border-radius: 50%; border: 1px solid var(--line);
+}
+.recipe h3 { font: 700 1.2rem/1.2 var(--display); margin: 0; }
+.recipe-meta { margin: 2px 0 0; color: var(--spruce-soft); font-size: 0.92rem; }
+.score { width: 84px; height: 10px; }
+.score::-webkit-meter-bar { background: var(--line); border: 0; border-radius: 6px; }
+.score::-webkit-meter-optimum-value { background: var(--fresh); border-radius: 6px; }
+.score::-moz-meter-bar { background: var(--fresh); }
+
+.ingredients { list-style: none; padding: 0; margin: 14px 0 8px 66px; display: flex; flex-wrap: wrap; gap: 6px; }
+.ing { font-size: 0.85rem; padding: 3px 10px; border-radius: var(--radius-tag); border: 1.5px solid var(--line); }
+.ing-have { border-color: var(--fresh); }
+.ing-rescued { border-color: var(--urgent); background: color-mix(in srgb, var(--urgent) 14%, transparent); font-weight: 600; }
+.ing-missing { border-style: dashed; color: var(--spruce-soft); }
+details { margin-left: 66px; }
+summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; width: fit-content; }
+.steps { margin: 8px 0 0; padding-left: 20px; color: var(--spruce-soft); }
+
+/* --- Formulaire */
+.add-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 0.88rem; font-weight: 600; }
+.field-wide { grid-column: 1 / -1; }
+input, select {
+  font: inherit; font-weight: 400; color: var(--spruce); background: var(--ice);
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 9px 10px; min-height: 42px; width: 100%;
+}
+input:focus-visible, select:focus-visible { border-color: var(--spruce); }
+button { font: 600 0.95rem/1 var(--body); cursor: pointer; border-radius: 8px; }
+.primary { background: var(--spruce); color: var(--frost); border: 0; padding: 13px 16px; }
+.primary:hover { background: color-mix(in srgb, var(--spruce) 85%, var(--fresh)); }
+.primary:disabled { opacity: 0.6; cursor: wait; }
+.ghost { background: transparent; border: 1.5px solid var(--line); color: var(--spruce); padding: 7px 10px; }
+.ghost:hover { border-color: var(--spruce); }
+
+/* --- Inventaire */
+.inventory { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: 10px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--fresh); }
+.row-urgent .dot { background: var(--urgent); }
+.row-soon .dot { background: var(--soon); }
+.row-expired .dot { background: var(--expired); }
+.row-main { display: flex; flex-direction: column; min-width: 0; }
+.row-name { font-weight: 600; }
+.row-meta { font-size: 0.85rem; color: var(--spruce-soft); }
+
+.footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--spruce-soft); font-size: 0.85rem; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 0);
+  background: var(--spruce); color: var(--frost); padding: 12px 18px; border-radius: 10px;
+  font-weight: 600; transition: opacity .2s, transform .2s;
+}
+.toast:empty { opacity: 0; transform: translate(-50%, 12px); pointer-events: none; }
+
+@media (max-width: 860px) {
+  .columns { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .ingredients, details { margin-left: 0; }
+}
+@media (max-width: 420px) {
+  .add-form { grid-template-columns: 1fr; }
+  .recipe-head { grid-template-columns: auto 1fr; }
+  .score { grid-column: 1 / -1; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: none; }
+}
