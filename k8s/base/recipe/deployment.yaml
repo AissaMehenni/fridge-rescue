@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recipe-service
+  labels:
+    app: recipe-service
+    version: v1
+spec:
+  replicas: 2   # sans état : 2 répliques, équilibrage gRPC par requête via Envoy
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: recipe-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  template:
+    metadata:
+      labels:
+        app: recipe-service
+        version: v1
+      annotations:
+        proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: recipe-service
+          image: aissiuuuu/fridge-recipe-service:0.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 9090
+            - name: http-monitoring
+              containerPort: 8081
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http-monitoring }
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http-monitoring }
+            periodSeconds: 10
+          readinessProbe:
+            # Sonde gRPC native : vérifie le service grpc.health.v1 exposé par spring-grpc.
+            grpc: { port: 9090 }
+            periodSeconds: 5

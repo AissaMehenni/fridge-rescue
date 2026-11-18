@@ -1,0 +1,28 @@
+# Circuit breaker côté client (Envoy du pod pantry-service) :
+#  - file d'attente bornée (connectionPool)
+#  - éjection des répliques en erreur (outlierDetection)
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: recipe-service
+spec:
+  host: recipe-service.fridge-rescue.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    loadBalancer:
+      simple: LEAST_REQUEST
+    connectionPool:
+      tcp:
+        maxConnections: 50
+        connectTimeout: 2s
+      http:
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 0
+        maxRetries: 2
+    outlierDetection:
+      consecutive5xxErrors: 3
+      consecutiveGatewayErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 100

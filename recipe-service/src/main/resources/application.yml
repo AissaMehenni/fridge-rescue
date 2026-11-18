@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: recipe-service
+  grpc:
+    server:
+      port: 9090
+      shutdown-grace-period: 15s
+      reflection:
+        enabled: true   # permet grpcurl list / describe
+
+# Port HTTP réservé aux sondes Kubernetes et aux métriques.
+server:
+  port: 8081
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true

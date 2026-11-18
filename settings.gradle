@@ -1,2 +1,4 @@
 rootProject.name = 'fridge-rescue'
+include 'recipe-contract'
+include 'recipe-service'
 include 'pantry-service'

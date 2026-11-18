@@ -8,4 +8,5 @@ labels:
 resources:
   - namespace.yaml
   - pantry
+  - recipe
   - istio

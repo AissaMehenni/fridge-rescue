@@ -6,6 +6,9 @@ FROM --platform=$BUILDPLATFORM eclipse-temurin:17.0.21_9-jdk-noble AS build
 WORKDIR /workspace
 COPY gradlew settings.gradle build.gradle gradle.properties ./
 COPY gradle gradle
+# Tous les modules Gradle doivent exister (settings.gradle) ; seul pantry-service est assemblé.
+COPY recipe-contract recipe-contract
+COPY recipe-service/build.gradle recipe-service/build.gradle
 COPY pantry-service pantry-service
 RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew :pantry-service:bootJar --no-daemon -q \

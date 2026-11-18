@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+description = 'Recipe service : moteur de suggestions anti-gaspi (gRPC)'
+
+dependencies {
+    implementation project(':recipe-contract')
+    implementation platform("org.springframework.grpc:spring-grpc-dependencies:${springGrpcVersion}")
+    implementation 'org.springframework.grpc:spring-grpc-spring-boot-starter'
+    implementation 'io.grpc:grpc-services'                       // health + reflection (grpcurl)
+    implementation 'org.springframework.boot:spring-boot-starter-web' // HTTP 8081 : actuator uniquement
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.grpc:grpc-inprocess'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+bootJar { archiveFileName = 'app.jar' }
+jar { enabled = false }

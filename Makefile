@@ -6,12 +6,12 @@ PLATFORMS    ?= linux/amd64,linux/arm64
 NAMESPACE    := fridge-rescue
 OVERLAY      ?= k8s/overlays/dev
 K8S_VERSION  ?= 1.34.0
-SERVICES     := pantry-service
+SERVICES     := pantry-service recipe-service
 CRD_SCHEMAS  := https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
 export JAVA_HOME ?= $(shell /usr/libexec/java_home -v 17 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help build test images push load deploy validate demo clean
+.PHONY: help build test images push load deploy validate demo clean istio observability
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n",$$1,$$2}'
@@ -36,6 +36,15 @@ load: images ## Charge les images locales dans minikube (sans registry)
 validate: ## Valide les manifests Kubernetes (kustomize + kubeconform)
 	kubectl kustomize $(OVERLAY) | kubeconform -strict -summary \
 	  -schema-location default -schema-location '$(CRD_SCHEMAS)' -kubernetes-version $(K8S_VERSION) -
+
+ISTIO_ADDONS := https://raw.githubusercontent.com/istio/istio/release-1.32/samples/addons
+
+istio: ## Installe Istio (profil demo) sur le cluster courant
+	istioctl install -f infra/istio/istio-config.yaml -y
+
+observability: ## Installe Prometheus, Grafana et Kiali (add-ons Istio 1.32)
+	@for a in prometheus grafana kiali; do kubectl apply -f $(ISTIO_ADDONS)/$$a.yaml; done
+	kubectl -n istio-system rollout status deploy/kiali --timeout=300s
 
 deploy: ## Déploie l'overlay sur le cluster courant
 	kubectl apply -k $(OVERLAY)
