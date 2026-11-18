@@ -1,0 +1,72 @@
+# Zero trust L7 : tout est refusé, puis chaque flux légitime est autorisé explicitement
+# d'après l'identité mTLS de l'appelant (principal = ServiceAccount).
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+spec: {}   # ALLOW sans règle = rien n'est autorisé
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: pantry-from-gateway
+spec:
+  selector:
+    matchLabels: { app: pantry-service }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+      to:
+        - operation:
+            methods: [GET, POST, PUT, DELETE]
+            paths: ["/api/*"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: recipe-from-pantry
+spec:
+  selector:
+    matchLabels: { app: recipe-service }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/fridge-rescue/sa/pantry-service"]
+      to:
+        - operation:
+            paths: ["/fridgerescue.recipe.v1.RecipeService/*"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: postgres-from-pantry
+spec:
+  selector:
+    matchLabels: { app: postgres }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/fridge-rescue/sa/pantry-service"]
+      to:
+        - operation:
+            ports: ["5432"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: frontend-from-gateway
+spec:
+  selector:
+    matchLabels: { app: frontend }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+      to:
+        - operation:
+            methods: [GET, HEAD]

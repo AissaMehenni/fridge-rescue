@@ -11,7 +11,7 @@ CRD_SCHEMAS  := https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.
 export JAVA_HOME ?= $(shell /usr/libexec/java_home -v 17 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: secrets help build test images push load deploy validate demo clean istio observability
+.PHONY: tls scan secrets help build test images push load deploy validate demo clean istio observability
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n",$$1,$$2}'
@@ -36,6 +36,14 @@ load: images ## Charge les images locales dans minikube (sans registry)
 secrets: ## Génère le fichier local des identifiants PostgreSQL (non versionné)
 	@f=$(OVERLAY)/db-credentials.env; if [ -f $$f ]; then echo "$$f existe déjà"; else \
 	  printf 'DB_USER=pantry\nDB_PASSWORD=%s\n' "$$(openssl rand -base64 24 | tr -d '/+=')" > $$f && chmod 600 $$f && echo "$$f créé"; fi
+
+tls: ## Génère le certificat auto-signé et le Secret TLS de la gateway
+	scripts/gen-tls.sh fridge-rescue.local
+
+scan: ## Scanne les images (trivy) : échoue sur HIGH/CRITICAL corrigeables
+	@for s in $(SERVICES); do \
+	  trivy image --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed \
+	    --ignorefile .trivyignore --exit-code 1 $(REGISTRY)/fridge-$$s:$(VERSION) || exit 1; done
 
 validate: secrets ## Valide les manifests Kubernetes (kustomize + kubeconform)
 	kubectl kustomize $(OVERLAY) | kubeconform -strict -summary \

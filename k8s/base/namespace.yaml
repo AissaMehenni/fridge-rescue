@@ -4,4 +4,8 @@ metadata:
   name: fridge-rescue
   labels:
     istio-injection: enabled   # sidecar Envoy injecté dans chaque pod
+    # Pod Security Admission : avertit/audite tout écart au profil "restricted".
+    # (Pas d'enforce : le conteneur istio-init requiert NET_ADMIN/NET_RAW.)
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
     app.kubernetes.io/part-of: fridge-rescue

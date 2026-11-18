@@ -1,0 +1,60 @@
+# RBAC à moindre privilège pour les humains / outils, limité au namespace.
+#  - fridge-viewer   : lecture seule (support, démo)
+#  - fridge-deployer : mise à jour des images (pipeline CD), sans accès aux Secrets
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fridge-viewer
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fridge-deployer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fridge-viewer
+rules:
+  - apiGroups: [""]
+    resources: [pods, pods/log, services, endpoints, configmaps, persistentvolumeclaims]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets, replicasets]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fridge-viewer
+subjects:
+  - kind: ServiceAccount
+    name: fridge-viewer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fridge-viewer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fridge-deployer
+rules:
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets]
+    verbs: [get, list, watch, patch, update]
+  - apiGroups: [""]
+    resources: [pods, services, configmaps]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fridge-deployer
+subjects:
+  - kind: ServiceAccount
+    name: fridge-deployer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fridge-deployer

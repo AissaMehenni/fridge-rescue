@@ -22,6 +22,14 @@ spec:
       annotations:
         proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
     spec:
+      serviceAccountName: recipe-service
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
       containers:
         - name: recipe-service
@@ -32,6 +40,11 @@ spec:
               containerPort: 9090
             - name: http-monitoring
               containerPort: 8081
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities: { drop: [ALL] }
           resources:
             requests: { cpu: 100m, memory: 256Mi }
             limits: { cpu: "1", memory: 512Mi }
@@ -46,3 +59,7 @@ spec:
             # Sonde gRPC native : vérifie le service grpc.health.v1 exposé par spring-grpc.
             grpc: { port: 9090 }
             periodSeconds: 5
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: { sizeLimit: 64Mi } }
