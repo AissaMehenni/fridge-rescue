@@ -1,0 +1,8 @@
+# Tout le trafic entrant du namespace doit être en mTLS (certificats SPIFFE émis par istiod).
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+spec:
+  mtls:
+    mode: STRICT

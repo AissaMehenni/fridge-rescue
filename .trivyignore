@@ -1,0 +1,8 @@
+# Vulnérabilités acceptées, revues le 2026-11-18. À réévaluer à chaque montée de version.
+#
+# spring-webmvc 6.2.19 : correctif uniquement en Spring Framework 7.0.9 (Spring Boot 4),
+# hors périmètre imposé (Spring Boot 3). Non exploitables ici :
+#  - RCE via XsltView : aucune vue XSLT, l'API ne produit que du JSON.
+CVE-2026-47884
+#  - corruption de flux SSE avec fragments de vue : aucun SSE ni moteur de vues.
+CVE-2026-47890

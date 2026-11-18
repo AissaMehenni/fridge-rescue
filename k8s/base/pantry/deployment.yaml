@@ -22,16 +22,29 @@ spec:
       annotations:
         proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
     spec:
+      serviceAccountName: pantry-service
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
       initContainers:
         # Attend que PostgreSQL accepte les connexions avant de lancer Flyway.
         # (Sidecar Istio natif : il démarre avant cet initContainer, le réseau est disponible.)
         - name: wait-for-postgres
-          image: postgres:17.9-alpine
-          command: ["sh", "-c", "for i in $(seq 1 60); do pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" && exit 0; sleep 2; done; exit 1"]
+          image: postgres:17.12-alpine
+          command: ["sh", "-c", "for i in $(seq 1 60); do pg_isready -U probe -h \"$DB_HOST\" -p \"$DB_PORT\" && exit 0; sleep 2; done; exit 1"]
           envFrom:
             - configMapRef:
                 name: pantry-db-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities: { drop: [ALL] }
           resources:
             requests: { cpu: 10m, memory: 16Mi }
             limits: { cpu: 100m, memory: 64Mi }
@@ -52,6 +65,11 @@ spec:
               value: postgres
             - name: RECIPE_SERVICE_ADDRESS
               value: static://recipe-service.fridge-rescue.svc.cluster.local:9090
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities: { drop: [ALL] }
           resources:
             requests: { cpu: 100m, memory: 256Mi }
             limits: { cpu: "1", memory: 512Mi }
@@ -65,3 +83,7 @@ spec:
           readinessProbe:
             httpGet: { path: /actuator/health/readiness, port: http }
             periodSeconds: 5
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: { sizeLimit: 64Mi } }

@@ -1,4 +1,6 @@
 # Point d'entrée unique du cluster : Istio Ingress Gateway.
+#  - 443 : HTTPS (TLS 1.2+), certificat dans le Secret istio-system/fridge-tls (make tls)
+#  - 80  : redirection permanente vers HTTPS
 apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
@@ -7,5 +9,13 @@ spec:
   selector:
     istio: ingressgateway
   servers:
+    - port: { number: 443, name: https, protocol: HTTPS }
+      hosts: ["*"]
+      tls:
+        mode: SIMPLE
+        credentialName: fridge-tls
+        minProtocolVersion: TLSV1_2
     - port: { number: 80, name: http, protocol: HTTP }
       hosts: ["*"]
+      tls:
+        httpsRedirect: true

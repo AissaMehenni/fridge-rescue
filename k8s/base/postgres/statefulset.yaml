@@ -16,15 +16,18 @@ spec:
         app: postgres
         version: v1
     spec:
+      serviceAccountName: postgres
+      automountServiceAccountToken: false
       terminationGracePeriodSeconds: 30
       securityContext:
         runAsUser: 70        # utilisateur "postgres" de l'image alpine
         runAsGroup: 70
         fsGroup: 70
         runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
       containers:
         - name: postgres
-          image: postgres:17.9-alpine
+          image: postgres:17.12-alpine
           ports:
             - name: tcp-postgres
               containerPort: 5432
@@ -36,6 +39,11 @@ spec:
               valueFrom: { secretKeyRef: { name: pantry-db-credentials, key: DB_USER } }
             - name: POSTGRES_PASSWORD
               valueFrom: { secretKeyRef: { name: pantry-db-credentials, key: DB_PASSWORD } }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities: { drop: [ALL] }
           resources:
             requests: { cpu: 100m, memory: 128Mi }
             limits: { cpu: 500m, memory: 512Mi }
@@ -49,6 +57,11 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+            - { name: run, mountPath: /var/run/postgresql }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: run, emptyDir: { sizeLimit: 64Mi } }
+        - { name: tmp, emptyDir: { sizeLimit: 64Mi } }
   # Un PersistentVolumeClaim par réplique, conservé si le pod est recréé.
   volumeClaimTemplates:
     - metadata:

@@ -23,7 +23,7 @@ class PostgresMigrationIT {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.9-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.12-alpine");
 
     @Autowired
     JdbcTemplate jdbc;
