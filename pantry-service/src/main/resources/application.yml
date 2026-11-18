@@ -10,6 +10,13 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: create-drop
+  grpc:
+    client:
+      channels:
+        recipes:
+          # Surchargé dans Kubernetes : static://recipe-service:9090
+          address: ${RECIPE_SERVICE_ADDRESS:static://localhost:9090}
+          negotiation-type: plaintext
   lifecycle:
     timeout-per-shutdown-phase: 20s
 
@@ -19,6 +26,8 @@ server:
 
 fridge:
   demo-data: true
+  recipes:
+    deadline: 2s
 
 management:
   endpoints:

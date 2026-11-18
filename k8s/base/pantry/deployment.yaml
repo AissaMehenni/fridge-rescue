@@ -19,6 +19,8 @@ spec:
       labels:
         app: pantry-service
         version: v1
+      annotations:
+        proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
     spec:
       terminationGracePeriodSeconds: 30
       containers:
@@ -28,6 +30,9 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          env:
+            - name: RECIPE_SERVICE_ADDRESS
+              value: static://recipe-service.fridge-rescue.svc.cluster.local:9090
           resources:
             requests: { cpu: 100m, memory: 256Mi }
             limits: { cpu: "1", memory: 512Mi }

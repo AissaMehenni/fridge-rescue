@@ -1,0 +1,242 @@
+[
+  {
+    "id": "omelette-epinards",
+    "title": "Omelette aux épinards",
+    "emoji": "🍳",
+    "prepMinutes": 10,
+    "ingredients": [
+      "Oeuf",
+      "Épinards",
+      "Fromage râpé",
+      "Lait"
+    ],
+    "steps": [
+      "Battre les oeufs avec le lait.",
+      "Faire tomber les épinards à la poêle.",
+      "Verser les oeufs, parsemer de fromage, plier."
+    ]
+  },
+  {
+    "id": "ratatouille-express",
+    "title": "Ratatouille express",
+    "emoji": "🍆",
+    "prepMinutes": 30,
+    "ingredients": [
+      "Tomate",
+      "Courgette",
+      "Oignon",
+      "Poivron",
+      "Ail"
+    ],
+    "steps": [
+      "Couper les légumes en dés.",
+      "Faire revenir l'oignon et l'ail.",
+      "Ajouter les légumes et mijoter 20 min."
+    ]
+  },
+  {
+    "id": "gratin-courgettes",
+    "title": "Gratin de courgettes",
+    "emoji": "🧀",
+    "prepMinutes": 35,
+    "ingredients": [
+      "Courgette",
+      "Lait",
+      "Fromage râpé",
+      "Oeuf"
+    ],
+    "steps": [
+      "Trancher les courgettes.",
+      "Mélanger lait, oeufs et fromage.",
+      "Verser sur les courgettes, cuire 25 min à 200 °C."
+    ]
+  },
+  {
+    "id": "riz-cantonais",
+    "title": "Riz cantonais",
+    "emoji": "🍚",
+    "prepMinutes": 20,
+    "ingredients": [
+      "Riz",
+      "Oeuf",
+      "Petits pois",
+      "Jambon",
+      "Oignon"
+    ],
+    "steps": [
+      "Cuire le riz la veille si possible.",
+      "Faire une omelette fine, la couper en lanières.",
+      "Sauter le tout au wok."
+    ]
+  },
+  {
+    "id": "poulet-basquaise",
+    "title": "Poulet basquaise",
+    "emoji": "🍗",
+    "prepMinutes": 45,
+    "ingredients": [
+      "Poulet",
+      "Tomate",
+      "Poivron",
+      "Oignon",
+      "Riz"
+    ],
+    "steps": [
+      "Dorer le poulet.",
+      "Ajouter oignon, poivron et tomate.",
+      "Mijoter 30 min, servir avec le riz."
+    ]
+  },
+  {
+    "id": "banana-bread",
+    "title": "Banana bread",
+    "emoji": "🍌",
+    "prepMinutes": 60,
+    "ingredients": [
+      "Banane",
+      "Oeuf",
+      "Farine",
+      "Sucre",
+      "Beurre"
+    ],
+    "steps": [
+      "Écraser les bananes bien mûres.",
+      "Mélanger avec le reste.",
+      "Cuire 45 min à 180 °C."
+    ]
+  },
+  {
+    "id": "crepes",
+    "title": "Crêpes",
+    "emoji": "🥞",
+    "prepMinutes": 25,
+    "ingredients": [
+      "Farine",
+      "Lait",
+      "Oeuf",
+      "Beurre"
+    ],
+    "steps": [
+      "Mélanger farine et oeufs.",
+      "Ajouter le lait peu à peu.",
+      "Cuire à la poêle beurrée."
+    ]
+  },
+  {
+    "id": "smoothie-banane",
+    "title": "Smoothie banane",
+    "emoji": "🥤",
+    "prepMinutes": 5,
+    "ingredients": [
+      "Banane",
+      "Lait",
+      "Miel"
+    ],
+    "steps": [
+      "Mixer le tout.",
+      "Servir frais."
+    ]
+  },
+  {
+    "id": "shakshuka",
+    "title": "Shakshuka",
+    "emoji": "🍅",
+    "prepMinutes": 25,
+    "ingredients": [
+      "Oeuf",
+      "Tomate",
+      "Oignon",
+      "Poivron"
+    ],
+    "steps": [
+      "Faire compoter tomate, oignon et poivron.",
+      "Creuser des puits, y casser les oeufs.",
+      "Couvrir 6 min."
+    ]
+  },
+  {
+    "id": "risotto-courgette",
+    "title": "Risotto à la courgette",
+    "emoji": "🥒",
+    "prepMinutes": 35,
+    "ingredients": [
+      "Riz",
+      "Courgette",
+      "Fromage râpé",
+      "Oignon",
+      "Bouillon"
+    ],
+    "steps": [
+      "Nacrer le riz avec l'oignon.",
+      "Mouiller au bouillon louche par louche.",
+      "Ajouter la courgette puis le fromage."
+    ]
+  },
+  {
+    "id": "curry-poulet-epinards",
+    "title": "Curry de poulet aux épinards",
+    "emoji": "🍛",
+    "prepMinutes": 30,
+    "ingredients": [
+      "Poulet",
+      "Épinards",
+      "Lait de coco",
+      "Oignon",
+      "Riz"
+    ],
+    "steps": [
+      "Dorer le poulet et l'oignon.",
+      "Ajouter le lait de coco et le curry.",
+      "Incorporer les épinards, servir avec le riz."
+    ]
+  },
+  {
+    "id": "pain-perdu",
+    "title": "Pain perdu",
+    "emoji": "🍞",
+    "prepMinutes": 15,
+    "ingredients": [
+      "Pain",
+      "Oeuf",
+      "Lait",
+      "Sucre"
+    ],
+    "steps": [
+      "Tremper le pain rassis dans oeufs + lait.",
+      "Dorer à la poêle.",
+      "Saupoudrer de sucre."
+    ]
+  },
+  {
+    "id": "soupe-legumes",
+    "title": "Soupe de légumes",
+    "emoji": "🥣",
+    "prepMinutes": 40,
+    "ingredients": [
+      "Courgette",
+      "Carotte",
+      "Pomme de terre",
+      "Poireau"
+    ],
+    "steps": [
+      "Éplucher et couper les légumes.",
+      "Cuire 30 min dans l'eau salée.",
+      "Mixer."
+    ]
+  },
+  {
+    "id": "salade-tomate-mozza",
+    "title": "Salade tomate mozzarella",
+    "emoji": "🥗",
+    "prepMinutes": 10,
+    "ingredients": [
+      "Tomate",
+      "Mozzarella",
+      "Basilic"
+    ],
+    "steps": [
+      "Trancher tomates et mozzarella.",
+      "Alterner, ajouter le basilic, huile d'olive."
+    ]
+  }
+]

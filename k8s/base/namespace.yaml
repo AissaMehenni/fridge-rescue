@@ -3,4 +3,5 @@ kind: Namespace
 metadata:
   name: fridge-rescue
   labels:
+    istio-injection: enabled   # sidecar Envoy injecté dans chaque pod
     app.kubernetes.io/part-of: fridge-rescue

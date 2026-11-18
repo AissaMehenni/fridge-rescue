@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+// Contrat entre pantry-service (client) et recipe-service (serveur).
+package fridgerescue.recipe.v1;
+
+option java_multiple_files = true;
+option java_package = "fr.efrei.fridgerescue.recipe.v1";
+option java_outer_classname = "RecipeProto";
+
+service RecipeService {
+  // Classe les recettes selon les ingrédients disponibles et leur urgence.
+  rpc SuggestRecipes(SuggestRecipesRequest) returns (SuggestRecipesResponse);
+  // Catalogue complet.
+  rpc ListRecipes(ListRecipesRequest) returns (ListRecipesResponse);
+}
+
+// Un ingrédient du frigo et le nombre de jours avant péremption.
+message Ingredient {
+  string name = 1;
+  int32 days_left = 2;
+}
+
+message SuggestRecipesRequest {
+  repeated Ingredient ingredients = 1;
+  int32 limit = 2; // 0 = valeur par défaut du serveur
+}
+
+message SuggestRecipesResponse {
+  repeated RecipeSuggestion suggestions = 1;
+}
+
+message ListRecipesRequest {}
+
+message ListRecipesResponse {
+  repeated Recipe recipes = 1;
+}
+
+message Recipe {
+  string id = 1;
+  string title = 2;
+  string emoji = 3;
+  int32 prep_minutes = 4;
+  repeated string ingredients = 5;
+  repeated string steps = 6;
+}
+
+message RecipeSuggestion {
+  Recipe recipe = 1;
+  int32 score = 2;                         // 0..100
+  repeated string used_ingredients = 3;    // présents dans le frigo
+  repeated string missing_ingredients = 4; // à acheter
+  repeated string rescued_ingredients = 5; // présents ET périment sous 2 jours
+}
