@@ -1,0 +1,11 @@
+# Paramètres non sensibles de la base, partagés par postgres et pantry-service.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pantry-db-config
+data:
+  DB_HOST: postgres.fridge-rescue.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: pantry
+  POSTGRES_DB: pantry
+  PGDATA: /var/lib/postgresql/data/pgdata
