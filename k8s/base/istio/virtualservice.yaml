@@ -1,0 +1,21 @@
+# Routage L7 : /api et /actuator/health vers pantry-service.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: fridge-routes
+spec:
+  hosts: ["*"]
+  gateways: [fridge-gateway]
+  http:
+    - name: pantry-api
+      match:
+        - uri: { prefix: /api/ }
+      route:
+        - destination:
+            host: pantry-service.fridge-rescue.svc.cluster.local
+            port: { number: 8080 }
+      timeout: 10s
+      retries:
+        attempts: 2
+        perTryTimeout: 4s
+        retryOn: connect-failure,refused-stream,unavailable,503

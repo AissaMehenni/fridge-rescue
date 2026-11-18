@@ -1,0 +1,11 @@
+# Point d'entrée unique du cluster : Istio Ingress Gateway.
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: fridge-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port: { number: 80, name: http, protocol: HTTP }
+      hosts: ["*"]
