@@ -1,0 +1,19 @@
+// Versions centralisées : toutes vérifiées sur Maven Central / plugins.gradle.org.
+plugins {
+    id 'org.springframework.boot' version '3.5.16' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+    id 'com.google.protobuf' version '0.9.6' apply false
+}
+
+subprojects {
+    group = 'fr.efrei.fridgerescue'
+    version = rootProject.findProperty('appVersion') ?: '0.1.0'
+
+    repositories { mavenCentral() }
+
+    plugins.withType(JavaPlugin).configureEach {
+        java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+        tasks.withType(Test).configureEach { useJUnitPlatform() }
+        tasks.withType(JavaCompile).configureEach { options.compilerArgs << '-parameters' }
+    }
+}

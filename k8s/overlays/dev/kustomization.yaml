@@ -1,0 +1,8 @@
+# Overlay minikube : images publiées sur Docker Hub, versions figées.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: aissiuuuu/fridge-pantry-service
+    newTag: 0.1.0
