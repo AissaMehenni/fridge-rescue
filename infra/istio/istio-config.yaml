@@ -1,0 +1,22 @@
+# Installation d'Istio (istioctl install -f infra/istio/istio-config.yaml -y)
+# Profil "demo" : istiod + ingress gateway, traçage à 100 %, ressources réduites pour minikube.
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: fridge-rescue-istio
+spec:
+  profile: demo
+  meshConfig:
+    accessLogFile: /dev/stdout
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY   # le mesh ne sort que vers des services déclarés
+  components:
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: false
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            type: LoadBalancer   # minikube tunnel lui attribue une IP

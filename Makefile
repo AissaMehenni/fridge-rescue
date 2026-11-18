@@ -7,6 +7,7 @@ NAMESPACE    := fridge-rescue
 OVERLAY      ?= k8s/overlays/dev
 K8S_VERSION  ?= 1.34.0
 SERVICES     := pantry-service
+CRD_SCHEMAS  := https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
 export JAVA_HOME ?= $(shell /usr/libexec/java_home -v 17 2>/dev/null)
 
 .DEFAULT_GOAL := help
@@ -33,7 +34,8 @@ load: images ## Charge les images locales dans minikube (sans registry)
 	@for s in $(SERVICES); do minikube image load $(REGISTRY)/fridge-$$s:$(VERSION); done
 
 validate: ## Valide les manifests Kubernetes (kustomize + kubeconform)
-	kubectl kustomize $(OVERLAY) | kubeconform -strict -summary -ignore-missing-schemas -kubernetes-version $(K8S_VERSION) -
+	kubectl kustomize $(OVERLAY) | kubeconform -strict -summary \
+	  -schema-location default -schema-location '$(CRD_SCHEMAS)' -kubernetes-version $(K8S_VERSION) -
 
 deploy: ## Déploie l'overlay sur le cluster courant
 	kubectl apply -k $(OVERLAY)
