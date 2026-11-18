@@ -1,0 +1,27 @@
+# Garantit au moins une réplique pendant les maintenances de nœuds (drain, mise à jour GKE).
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pantry-service
+  namespace: fridge-rescue
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: pantry-service } }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: recipe-service
+  namespace: fridge-rescue
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: recipe-service } }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend
+  namespace: fridge-rescue
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: frontend } }

@@ -1,20 +1,34 @@
 # Fridge Rescue — commandes du projet. `make help` pour la liste.
 SHELL        := /bin/bash
-VERSION      ?= 0.1.0
+VERSION      ?= 0.4.0
+FRONT_VERSION ?= 0.5.0
 REGISTRY     ?= aissiuuuu
 PLATFORMS    ?= linux/amd64,linux/arm64
 NAMESPACE    := fridge-rescue
 OVERLAY      ?= k8s/overlays/dev
 K8S_VERSION  ?= 1.34.0
 SERVICES     := pantry-service recipe-service
+MINIKUBE_MEMORY ?= 8192   # baisser (ex. 7168) si Docker Desktop dispose de moins de 9 Go
 CRD_SCHEMAS  := https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
 export JAVA_HOME ?= $(shell /usr/libexec/java_home -v 17 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: tls scan secrets help build test images push load deploy validate demo clean istio observability
+.PHONY: up cluster open kiali tls scan secrets help build test images push load deploy validate demo clean istio observability
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n",$$1,$$2}'
+
+up: cluster istio observability tls load deploy ## Tout depuis zéro : minikube, Istio, images, déploiement
+
+cluster: ## Démarre minikube (driver docker, 6 CPU)
+	minikube status >/dev/null 2>&1 || minikube start --driver=docker --cpus=6 --memory=$(MINIKUBE_MEMORY)
+
+open: ## Expose la gateway sur https://localhost:8443 (Ctrl+C pour arrêter)
+	@echo "→ https://localhost:8443  (CA locale : certs/ca.crt)"
+	kubectl -n istio-system port-forward svc/istio-ingressgateway 8443:443 8080:80
+
+kiali: ## Ouvre le graphe du service mesh dans Kiali
+	istioctl dashboard kiali
 
 build: ## Compile tous les services (sans tests)
 	./gradlew assemble
@@ -26,15 +40,16 @@ test: ## Lance les tests (Java + front)
 images: ## Construit les images locales (architecture de la machine)
 	@for s in $(SERVICES); do \
 	  docker buildx build -f $$s/Dockerfile -t $(REGISTRY)/fridge-$$s:$(VERSION) --load . || exit 1; done
-	docker buildx build -t $(REGISTRY)/fridge-frontend:$(VERSION) --load frontend
+	docker buildx build -t $(REGISTRY)/fridge-frontend:$(FRONT_VERSION) --load frontend
 
 push: ## Construit et pousse les images multi-arch sur Docker Hub
 	@for s in $(SERVICES); do \
 	  docker buildx build --platform $(PLATFORMS) -f $$s/Dockerfile -t $(REGISTRY)/fridge-$$s:$(VERSION) --push . || exit 1; done
-	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/fridge-frontend:$(VERSION) --push frontend
+	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/fridge-frontend:$(FRONT_VERSION) --push frontend
 
 load: images ## Charge les images locales dans minikube (sans registry)
-	@for s in $(SERVICES) frontend; do minikube image load $(REGISTRY)/fridge-$$s:$(VERSION); done
+	@for s in $(SERVICES); do minikube image load --overwrite=true $(REGISTRY)/fridge-$$s:$(VERSION); done
+	minikube image load --overwrite=true $(REGISTRY)/fridge-frontend:$(FRONT_VERSION)
 
 secrets: ## Génère le fichier local des identifiants PostgreSQL (non versionné)
 	@f=$(OVERLAY)/db-credentials.env; if [ -f $$f ]; then echo "$$f existe déjà"; else \
@@ -44,9 +59,9 @@ tls: ## Génère le certificat auto-signé et le Secret TLS de la gateway
 	scripts/gen-tls.sh fridge-rescue.local
 
 scan: ## Scanne les images (trivy) : échoue sur HIGH/CRITICAL corrigeables
-	@for s in $(SERVICES) frontend; do \
+	@for i in $(foreach s,$(SERVICES),$(REGISTRY)/fridge-$(s):$(VERSION)) $(REGISTRY)/fridge-frontend:$(FRONT_VERSION); do \
 	  trivy image --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed \
-	    --ignorefile .trivyignore --exit-code 1 $(REGISTRY)/fridge-$$s:$(VERSION) || exit 1; done
+	    --ignorefile .trivyignore --exit-code 1 $$i || exit 1; done
 
 validate: secrets ## Valide les manifests Kubernetes (kustomize + kubeconform)
 	kubectl kustomize $(OVERLAY) | kubeconform -strict -summary \
@@ -65,9 +80,10 @@ deploy: secrets ## Déploie l'overlay sur le cluster courant
 	kubectl apply -k $(OVERLAY)
 	kubectl -n $(NAMESPACE) rollout status deploy --timeout=300s
 
-demo: ## Affiche l'état du cluster et un appel de démonstration
-	kubectl -n $(NAMESPACE) get pods,svc
+demo: ## Script de démo (3 min) : parcours fonctionnel + preuves de sécurité
+	scripts/demo.sh
 
-clean: ## Supprime le namespace et les artefacts de build
+clean: ## Supprime le namespace et les artefacts de build (le cluster est conservé)
 	-kubectl delete namespace $(NAMESPACE) --ignore-not-found
 	./gradlew clean
+	rm -rf frontend/dist

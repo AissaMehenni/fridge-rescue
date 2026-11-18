@@ -1,0 +1,30 @@
+# Overlay cloud (GKE / AKS) : même base que minikube, adaptée à un cluster managé.
+#  - images figées par version (pas de latest)
+#  - plus de répliques + HPA + PodDisruptionBudget
+#  - disque persistant de la classe managée
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - hpa.yaml
+  - pdb.yaml
+images:
+  - name: aissiuuuu/fridge-pantry-service
+    newTag: 0.4.0
+  - name: aissiuuuu/fridge-recipe-service
+    newTag: 0.4.0
+  - name: aissiuuuu/fridge-frontend
+    newTag: 0.5.0
+patches:
+  - path: patches/postgres-storage.yaml
+  - path: patches/pantry-resources.yaml
+  - path: patches/spread-pantry-service.yaml
+  - path: patches/spread-recipe-service.yaml
+  - path: patches/spread-frontend.yaml
+# En cloud, le fichier est produit par le pipeline depuis le gestionnaire de secrets
+# (Google Secret Manager / Azure Key Vault), jamais commité.
+secretGenerator:
+  - name: pantry-db-credentials
+    namespace: fridge-rescue
+    envs:
+      - db-credentials.env
