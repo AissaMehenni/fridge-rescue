@@ -6,7 +6,7 @@ metadata:
     app: pantry-service
     version: v1
 spec:
-  replicas: 1   # 2 répliques à partir de la phase 4 (état partagé dans PostgreSQL)
+  replicas: 2   # sans état : les données vivent dans PostgreSQL
   revisionHistoryLimit: 3
   selector:
     matchLabels:
@@ -23,6 +23,18 @@ spec:
         proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
     spec:
       terminationGracePeriodSeconds: 30
+      initContainers:
+        # Attend que PostgreSQL accepte les connexions avant de lancer Flyway.
+        # (Sidecar Istio natif : il démarre avant cet initContainer, le réseau est disponible.)
+        - name: wait-for-postgres
+          image: postgres:17.9-alpine
+          command: ["sh", "-c", "for i in $(seq 1 60); do pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" && exit 0; sleep 2; done; exit 1"]
+          envFrom:
+            - configMapRef:
+                name: pantry-db-config
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }
       containers:
         - name: pantry-service
           image: aissiuuuu/fridge-pantry-service:0.1.0
@@ -30,7 +42,14 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pantry-db-config
+            - secretRef:
+                name: pantry-db-credentials   # DB_USER / DB_PASSWORD, jamais dans git
           env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: postgres
             - name: RECIPE_SERVICE_ADDRESS
               value: static://recipe-service.fridge-rescue.svc.cluster.local:9090
           resources:

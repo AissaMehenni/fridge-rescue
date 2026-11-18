@@ -11,7 +11,7 @@ CRD_SCHEMAS  := https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.
 export JAVA_HOME ?= $(shell /usr/libexec/java_home -v 17 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help build test images push load deploy validate demo clean istio observability
+.PHONY: secrets help build test images push load deploy validate demo clean istio observability
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n",$$1,$$2}'
@@ -33,7 +33,11 @@ push: ## Construit et pousse les images multi-arch sur Docker Hub
 load: images ## Charge les images locales dans minikube (sans registry)
 	@for s in $(SERVICES); do minikube image load $(REGISTRY)/fridge-$$s:$(VERSION); done
 
-validate: ## Valide les manifests Kubernetes (kustomize + kubeconform)
+secrets: ## Génère le fichier local des identifiants PostgreSQL (non versionné)
+	@f=$(OVERLAY)/db-credentials.env; if [ -f $$f ]; then echo "$$f existe déjà"; else \
+	  printf 'DB_USER=pantry\nDB_PASSWORD=%s\n' "$$(openssl rand -base64 24 | tr -d '/+=')" > $$f && chmod 600 $$f && echo "$$f créé"; fi
+
+validate: secrets ## Valide les manifests Kubernetes (kustomize + kubeconform)
 	kubectl kustomize $(OVERLAY) | kubeconform -strict -summary \
 	  -schema-location default -schema-location '$(CRD_SCHEMAS)' -kubernetes-version $(K8S_VERSION) -
 
@@ -46,7 +50,7 @@ observability: ## Installe Prometheus, Grafana et Kiali (add-ons Istio 1.32)
 	@for a in prometheus grafana kiali; do kubectl apply -f $(ISTIO_ADDONS)/$$a.yaml; done
 	kubectl -n istio-system rollout status deploy/kiali --timeout=300s
 
-deploy: ## Déploie l'overlay sur le cluster courant
+deploy: secrets ## Déploie l'overlay sur le cluster courant
 	kubectl apply -k $(OVERLAY)
 	kubectl -n $(NAMESPACE) rollout status deploy --timeout=300s
 

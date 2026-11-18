@@ -5,6 +5,14 @@ resources:
   - ../../base
 images:
   - name: aissiuuuu/fridge-pantry-service
-    newTag: 0.2.0
+    newTag: 0.3.0
   - name: aissiuuuu/fridge-recipe-service
     newTag: 0.2.0
+# Secret généré depuis un fichier local non versionné (make secrets).
+secretGenerator:
+  - name: pantry-db-credentials
+    namespace: fridge-rescue
+    envs:
+      - db-credentials.env
+generatorOptions:
+  disableNameSuffixHash: false   # le hash force le redémarrage des pods si le secret change
