@@ -10,5 +10,6 @@ resources:
   - postgres
   - pantry
   - recipe
+  - frontend
   - istio
   - security

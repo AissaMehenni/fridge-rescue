@@ -1,4 +1,4 @@
-# Routage L7 : /api et /actuator/health vers pantry-service.
+# Routage L7 : /api vers pantry-service, tout le reste vers le front React.
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
@@ -19,3 +19,8 @@ spec:
         attempts: 2
         perTryTimeout: 4s
         retryOn: connect-failure,refused-stream,unavailable,503
+    - name: frontend
+      route:
+        - destination:
+            host: frontend.fridge-rescue.svc.cluster.local
+            port: { number: 8080 }

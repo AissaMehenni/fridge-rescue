@@ -19,19 +19,22 @@ help: ## Affiche cette aide
 build: ## Compile tous les services (sans tests)
 	./gradlew assemble
 
-test: ## Lance les tests unitaires et d'intégration
+test: ## Lance les tests (Java + front)
 	./gradlew test
+	cd frontend && npm ci --no-audit --no-fund && npm test
 
 images: ## Construit les images locales (architecture de la machine)
 	@for s in $(SERVICES); do \
 	  docker buildx build -f $$s/Dockerfile -t $(REGISTRY)/fridge-$$s:$(VERSION) --load . || exit 1; done
+	docker buildx build -t $(REGISTRY)/fridge-frontend:$(VERSION) --load frontend
 
 push: ## Construit et pousse les images multi-arch sur Docker Hub
 	@for s in $(SERVICES); do \
 	  docker buildx build --platform $(PLATFORMS) -f $$s/Dockerfile -t $(REGISTRY)/fridge-$$s:$(VERSION) --push . || exit 1; done
+	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/fridge-frontend:$(VERSION) --push frontend
 
 load: images ## Charge les images locales dans minikube (sans registry)
-	@for s in $(SERVICES); do minikube image load $(REGISTRY)/fridge-$$s:$(VERSION); done
+	@for s in $(SERVICES) frontend; do minikube image load $(REGISTRY)/fridge-$$s:$(VERSION); done
 
 secrets: ## Génère le fichier local des identifiants PostgreSQL (non versionné)
 	@f=$(OVERLAY)/db-credentials.env; if [ -f $$f ]; then echo "$$f existe déjà"; else \
@@ -41,7 +44,7 @@ tls: ## Génère le certificat auto-signé et le Secret TLS de la gateway
 	scripts/gen-tls.sh fridge-rescue.local
 
 scan: ## Scanne les images (trivy) : échoue sur HIGH/CRITICAL corrigeables
-	@for s in $(SERVICES); do \
+	@for s in $(SERVICES) frontend; do \
 	  trivy image --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed \
 	    --ignorefile .trivyignore --exit-code 1 $(REGISTRY)/fridge-$$s:$(VERSION) || exit 1; done
 
