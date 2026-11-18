@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pantry-service
+  labels:
+    app: pantry-service
+    version: v1
+spec:
+  replicas: 1   # 2 répliques à partir de la phase 4 (état partagé dans PostgreSQL)
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: pantry-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  template:
+    metadata:
+      labels:
+        app: pantry-service
+        version: v1
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: pantry-service
+          image: aissiuuuu/fridge-pantry-service:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            periodSeconds: 5
